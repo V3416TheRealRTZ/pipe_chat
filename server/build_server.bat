@@ -1,0 +1,1 @@
+qmake.exe %~dp0\PipeChatServer.pro -r -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug" && mingw32-make.exe
