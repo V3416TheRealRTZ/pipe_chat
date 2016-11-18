@@ -1,1 +1,1 @@
-git pull && cd %~dp0\server && build_server.bat && cd %~dp0\client && build_client.bat && cd %~dp0
+git pull && cd %~dp0\server && build_server.bat && cd %~dp0\client && build_client.bat && cd %~dp0 && make_version.bat
