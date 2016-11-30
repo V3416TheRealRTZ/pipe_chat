@@ -4,43 +4,127 @@ import QtQuick.Layouts 1.3
 
 Page {
     id: root
+
+    Component.onCompleted: {
+        client.connected.connect(setupConnected)
+        client.error.connect(showError)
+        client.stateChanged.connect(showSocketState)
+    }
+
+    function setupConnected() {
+        infoLabel.text = ""
+        errorLabel.text = ""
+        root.StackView.view.push("qrc:/ChatroomPage.qml")
+    }
+
+    function showError(errorCode) {
+        errorLabel.text = qsTr("Unable to connect. " + connectionErrorToStr(errorCode))
+    }
+
+    function showSocketState(socketState) {
+        infoLabel.text = socketStateToStr(socketState)
+    }
+
+    function socketStateToStr(socketState) {
+        switch(socketState) {
+        case 1:
+            return "Looking up hostname..."
+        case 2:
+            return "Establishing connection..."
+        default:
+            return ""
+        }
+    }
+
+    function connectionErrorToStr(errorCode) {
+        switch(errorCode) {
+        case 0:
+            return "Connection refused by peer."
+        case 1:
+            return "Remote host closed the connection."
+        case 2:
+            return "Host address not found."
+        case 3:
+            return "Insufficient application privileges."
+        case 4:
+            return "Local system ran out of resources."
+        case 5:
+            return "The socket operation timed out."
+        case 6:
+            return "Network error."
+        default:
+            return "Socket error, code " + errorCode
+        }
+    }
+
     Pane {
         id: pane
         Layout.fillWidth: true
-        GridLayout {
+
+        ColumnLayout {
             id: grid
-            columns: 2
             width: parent.width
 
-            Label {
-                text: qsTr("ip")
+            Row {
+                spacing: 10
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Hostname")
+                }
+
+                TextField {
+                    id: ipField
+                    placeholderText: qsTr("127.0.0.1")
+                }
+
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Port")
+                }
+
+                TextField {
+                    id: portField
+                    width: ipField.width / 3
+                }
             }
 
-            TextField {
-                id: ipField
-                inputMask: "000.000.000.000;_"
-            }
+            Row {
+                spacing: 10
+                Label {
+                    text: qsTr("Username")
+                    Layout.columnSpan: 2
+                }
 
-            Label {
-                text: qsTr("Username")
-            }
-
-            TextField {
-                id: usernameField
-                placeholderText: qsTr("Username")
-                validator: RegExpValidator{ regExp: /\w+/g }
-                maximumLength: 24
+                TextField {
+                    id: usernameField
+                    Layout.columnSpan: 2
+                    placeholderText: qsTr("Username")
+                    validator: RegExpValidator{ regExp: /\w+/g }
+                    maximumLength: 24
+                }
             }
 
             Button {
                 id: connectButton
                 text: qsTr("Connect")
                 Layout.fillWidth: true
-                Layout.columnSpan: 2
+                enabled: ipField.length > 0 && portField.length > 0 && usernameField.length > 0
                 onClicked: {
-                    //connect
-                    root.StackView.view.push("qrc:/ChatroomPage.qml")
+                    client.connectToHost(ipField.text, parseInt(portField.text))
                 }
+            }
+
+            Label {
+                text: ""
+                color: "blue"
+                id: infoLabel
+            }
+
+            Label {
+                text: ""
+                color: "red"
+                font.bold: true
+                id: errorLabel
             }
         }
     }

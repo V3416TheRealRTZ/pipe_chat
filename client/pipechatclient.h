@@ -15,15 +15,21 @@ class PipeChatClient : public QTcpSocket
         smUSERS
     };
 
-    PipeChatMessageModel m_Model;
-
     static const QString SYSTEM_MSGS[]; // Keywords indicating various system messages
 
     QString username;
     QStringList userlist;
 public:
     PipeChatClient();
-    void appendMessage(const QString &message);
+    virtual ~PipeChatClient();
+    Q_INVOKABLE virtual void connectToHost(const QString &hostName,
+                               quint16 port,
+                               OpenMode openMode = ReadWrite,
+                               NetworkLayerProtocol protocol = AnyIPProtocol);
+   // void appendMessage(const QString &message);
+private slots:
+    void onReadyRead();
+    void onConnected();
 };
 
 #endif // PIPECHATCLIENT_H

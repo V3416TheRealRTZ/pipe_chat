@@ -37,7 +37,8 @@ public:
 
     virtual QHash<int, QByteArray> roleNames() const;
 
-private:
+    void addMessage(const QString &author, const QString &timestamp, const QString &text);
+
 };
 
 #endif // PIPECHATMESSAGEMODEL_H

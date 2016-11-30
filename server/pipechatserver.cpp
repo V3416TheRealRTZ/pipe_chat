@@ -11,7 +11,10 @@ const QString PipeChatServer::SYSTEM_MSGS[] = {
 
 PipeChatServer::PipeChatServer(QObject *parent) : QTcpServer(parent)
 {
-    listen();
+    if (!listen())
+        qDebug() << "Failed to begin listening!";
+    else
+        printf_s("Listening on port %u...", serverPort());
 }
 
 PipeChatServer::~PipeChatServer()

@@ -5,10 +5,33 @@ PipeChatClient::PipeChatClient()
 
 }
 
-void PipeChatClient::appendMessage(const QString& message)
+PipeChatClient::~PipeChatClient()
 {
-    //TODO: parse message and set it
-    // maybe move this to model itself
-    //m_Model.insertRow(m_Model.rowCount());
-    //m_Model.setData(QAbstractItemModel::createIndex(m_Model.rowCount() - 1, 0), );
+
+}
+
+void PipeChatClient::connectToHost(const QString &hostName, quint16 port, QIODevice::OpenMode openMode, QAbstractSocket::NetworkLayerProtocol protocol)
+{
+    QAbstractSocket::connectToHost(hostName, port, openMode, protocol);
+}
+
+/*void PipeChatClient::appendMessage(const QString& message)
+{
+    QRegExp regexp("^(.*) (.*) (.*)$");
+
+    if(regexp.indexIn(message) == -1) {
+        qDebug() << "Received unknown message: " << message;
+        return;
+    }
+    m_Model.addMessage(regexp.cap(1), regexp.cap(2), regexp.cap(3));
+}*/
+
+void PipeChatClient::onReadyRead()
+{
+
+}
+
+void PipeChatClient::onConnected()
+{
+
 }
