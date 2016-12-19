@@ -31,8 +31,8 @@ void PipeChatServer::onDisconnected()
         return;
     }
 
-    broadcast( client->name + " disconnected." );
-    clients.remove(client);
+    broadcast( client->Name + " disconnected." );
+    m_Clients.remove(client);
     sendUserList();
 }
 
@@ -53,9 +53,9 @@ void PipeChatServer::receiveData()
 
 void PipeChatServer::broadcast(const QString &msg, QTcpSocket *exception /* = nullptr */)
 {
-    for (Client *client : clients)
-        if (exception != nullptr && client->socket != exception)
-            sendMessage(client->socket, msg);
+    for (Client *client : m_Clients)
+        if (exception != nullptr && client->Socket != exception)
+            sendMessage(client->Socket, msg);
 }
 
 void PipeChatServer::parseSystemMessage(QTcpSocket *sender, const QString &msg)
@@ -71,7 +71,7 @@ void PipeChatServer::parseSystemMessage(QTcpSocket *sender, const QString &msg)
         sendMessage(sender, "Unknown command.");
         break;
     case smJOIN:
-        clients.insert(new Client(sender, parts[1]));
+        m_Clients.insert(new Client(sender, parts[1]));
         sendUserList();
         broadcast(parts[1] + " joined.");
         break;
@@ -91,15 +91,15 @@ void PipeChatServer::sendMessage(QTcpSocket *socket, const QString &msg)
 void PipeChatServer::sendUserList()
 {
     QString msg(SYSTEM_MSGS[smUSERS]);
-    for (Client *client : clients)
-        msg += " " + client->name;
+    for (Client *client : m_Clients)
+        msg += " " + client->Name;
     broadcast(msg);
 }
 
 PipeChatServer::Client *PipeChatServer::findClient(QTcpSocket *socket)
 {
-    for (Client *client : clients)
-        if (client->socket == socket)
+    for (Client *client : m_Clients)
+        if (client->Socket == socket)
             return client;
     return nullptr;
 }

@@ -10,15 +10,15 @@ class PipeChatServer : public QTcpServer
     Q_OBJECT
 
     struct Client {
-        QTcpSocket *socket;
-        QString name;
+        QTcpSocket *Socket;
+        QString Name;
         Client(QTcpSocket *newSocket, const QString &newName) :
-            socket(newSocket), name(newName)
+            Socket(newSocket), Name(newName)
         {}
         ~Client() {}
     };
 
-    QSet<Client *> clients;
+    QSet<Client *> m_Clients;
 
     enum SystemMsg {
         smNONE,
