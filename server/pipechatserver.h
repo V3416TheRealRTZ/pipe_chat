@@ -9,24 +9,18 @@ class PipeChatServer : public QTcpServer
 {
     Q_OBJECT
 
-    struct Client {
-        QTcpSocket *Socket;
-        QString Name;
-        Client(QTcpSocket *newSocket, const QString &newName) :
-            Socket(newSocket), Name(newName)
-        {}
-        ~Client() {}
-    };
-
-    QSet<Client *> m_Clients;
-
     enum SystemMsg {
         smNONE,
         smJOIN,
         smUSERS
     };
 
-    static const QString SYSTEM_MSGS[]; // Keywords indicating various system messages
+    static const QStringList SYSTEM_MSGS; // Keywords indicating various system messages
+
+    QMap<QTcpSocket *, QString> m_Clients;
+
+protected:
+    virtual void incomingConnection(int socketfd);
 
 public:
     PipeChatServer(QObject *parent = 0);
@@ -43,7 +37,6 @@ private:
     void parseSystemMessage(QTcpSocket *sender, const QString &msg);
     void sendMessage(QTcpSocket *socket, const QString &msg);
     void sendUserList();
-    Client *findClient(QTcpSocket *socket);
 
 };
 

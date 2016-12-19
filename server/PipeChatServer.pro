@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core network
+QT       += network
 QT       -= gui
 
 TARGET = PipeChatServer
