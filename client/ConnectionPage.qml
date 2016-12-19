@@ -18,11 +18,12 @@ Page {
     }
 
     function showError(errorCode) {
-        errorLabel.text = qsTr("Unable to connect. " + connectionErrorToStr(errorCode))
+        errorLabel.text = qsTr(connectionErrorToStr(errorCode))
     }
 
     function showSocketState(socketState) {
         infoLabel.text = socketStateToStr(socketState)
+        errorLabel.text = ""
     }
 
     function socketStateToStr(socketState) {
@@ -110,6 +111,7 @@ Page {
                 Layout.fillWidth: true
                 enabled: ipField.length > 0 && portField.length > 0 && usernameField.length > 0
                 onClicked: {
+                    client.username = usernameField.text
                     client.connectToHost(ipField.text, parseInt(portField.text))
                 }
             }

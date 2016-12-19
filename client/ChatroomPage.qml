@@ -11,10 +11,16 @@ Page {
 
     Component.onCompleted: {
         client.disconnected.connect(onDisconnected)
+        client.messageArrived.connect(onMessageArrived)
     }
 
     function onDisconnected() {
         root.StackView.view.pop()
+    }
+
+    function onMessageArrived(msg) {
+        var parts = msg.split(" ")
+        chatModel.addMessage(parts[0], parts[1], parts.slice(2).join(" "))
     }
 
     header: ToolBar {
@@ -50,12 +56,14 @@ Page {
                 displayMarginEnd: 40
                 verticalLayoutDirection: ListView.BottomToTop
                 spacing: 12
-                model: PipeChatMessageModel {}
+                model: PipeChatMessageModel {
+                    id: chatModel
+                }
                 delegate: Column {
                     anchors.right: sentByMe ? parent.right : undefined
                     spacing: 6
 
-                    readonly property bool sentByMe: index % 2 == 0
+                    readonly property bool sentByMe: author.text == client.username
 
                     Row {
                         id: messageRow
@@ -89,11 +97,8 @@ Page {
 
                     Label {
                         id: timestampText
-                        text:  {
-                        if (Qt.formatDate(currentDate) != Qt.formatDate(currentDate))
-                            Qt.formatDateTime(currentDate)
-                        else
-                            Qt.formatTime(currentDate)
+                        text: {
+                            model.timestamp
                         }
 
                         color: "lightgrey"
@@ -113,7 +118,7 @@ Page {
                 displayMarginEnd: 40
                 verticalLayoutDirection: ListView.TopToBottom
                 spacing: 12
-                model: 10
+                model: client.userlist
                 delegate: ItemDelegate {
                     text: modelData
                     width: userList.width - userList.leftMargin - userList.rightMargin
@@ -143,9 +148,20 @@ Page {
                         id: sendButton
                         text: qsTr("Send")
                         enabled: messageField.length > 0
-                        onClicked: {
+                        function activate() {
+                            chatModel.addMessage(client.username, Qt.formatDateTime(currentDate, "hh:mm"), messageField.text)
+                            client.sendMessage(messageField.text)
                             messageField.text = "";
                         }
+
+                        onClicked: {
+                            activate()
+                        }
+                    }
+
+                    Shortcut {
+                        sequence: StandardKey.InsertParagraphSeparator
+                        onActivated: sendButton.activate()
                     }
                 }
             }

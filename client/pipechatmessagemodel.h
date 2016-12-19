@@ -37,7 +37,7 @@ public:
 
     virtual QHash<int, QByteArray> roleNames() const;
 
-    void addMessage(const QString &author, const QString &timestamp, const QString &text);
+    Q_INVOKABLE void addMessage(const QString &author, const QString &timestamp, const QString &text);
 
 };
 
