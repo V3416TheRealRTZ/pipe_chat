@@ -15,7 +15,7 @@ class PipeChatServer : public QTcpServer
         smUSERS
     };
 
-    static const QStringList SYSTEM_MSGS; // Keywords indicating various system messages
+    static const QStringList SYSTEM_MSGS; //!< Keywords indicating various system messages
 
     QMap<QTcpSocket *, QString> m_Clients;
 
@@ -27,15 +27,21 @@ public:
     ~PipeChatServer();
 
 private slots:
-    /* Called whenever a socket disconnects. */
+    //< Called whenever a socket disconnects.
     void onDisconnected();
-    /* Called whenever a socket sends data. */
+    //< Called whenever a socket sends data.
     void receiveData();
 
 private:
+    //< Send message to all connected clients, with possible exception
     void broadcast(const QString &msg, QTcpSocket *exception = nullptr);
+    //< Broadcast message with added author and timestamp
+    void broadcastMessage(const QString &author, const QString &msg, QTcpSocket *exception = nullptr);
+    //< Parse and process received system message
     void parseSystemMessage(QTcpSocket *sender, const QString &msg);
+    //< Write message to a socket
     void sendMessage(QTcpSocket *socket, const QString &msg);
+    //< Broadcast userlist
     void sendUserList();
 
 };

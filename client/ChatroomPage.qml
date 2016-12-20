@@ -19,8 +19,8 @@ Page {
     }
 
     function onMessageArrived(msg) {
-        var parts = msg.split(" ")
-        chatModel.addMessage(parts[0], parts[1], parts.slice(2).join(" "))
+        var parts = msg.split(";")
+        chatModel.addMessage(parts[0], parts[1], parts.slice(2).join(";"))
     }
 
     header: ToolBar {
@@ -137,11 +137,10 @@ Page {
                 RowLayout {
                     width: parent.width
 
-                    TextArea {
+                    TextField {
                         id: messageField
                         Layout.fillWidth: true
                         placeholderText: qsTr("Compose message")
-                        wrapMode: TextArea.Wrap
                     }
 
                     Button {
@@ -149,19 +148,19 @@ Page {
                         text: qsTr("Send")
                         enabled: messageField.length > 0
                         function activate() {
-                            chatModel.addMessage(client.username, Qt.formatDateTime(currentDate, "hh:mm"), messageField.text)
+                            if(!enabled)
+                                return
                             client.sendMessage(messageField.text)
                             messageField.text = "";
                         }
-
+                        Shortcut {
+                            enabled: parent.enabled
+                            sequence: StandardKey.InsertParagraphSeparator
+                            onActivated: parent.activate()
+                        }
                         onClicked: {
                             activate()
                         }
-                    }
-
-                    Shortcut {
-                        sequence: StandardKey.InsertParagraphSeparator
-                        onActivated: sendButton.activate()
                     }
                 }
             }

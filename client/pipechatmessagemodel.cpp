@@ -5,9 +5,6 @@
 PipeChatMessageModel::PipeChatMessageModel(QObject *parent)
     : QAbstractListModel(parent)
 {
-    addMessage( "Kappa", QDateTime::currentDateTime().toString(), "Welcome to the show." );
-    addMessage( "PogChamp", QDateTime::currentDateTime().toString(), "TI WINNER LUL" );
-    addMessage( "LUL", QDateTime::currentDateTime().toString(), "CS LUL" );
 }
 
 int PipeChatMessageModel::rowCount(const QModelIndex &parent) const

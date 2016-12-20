@@ -111,8 +111,16 @@ Page {
                 Layout.fillWidth: true
                 enabled: ipField.length > 0 && portField.length > 0 && usernameField.length > 0
                 onClicked: {
+                    activate()
+                }
+                function activate() {
                     client.username = usernameField.text
                     client.connectToHost(ipField.text, parseInt(portField.text))
+                }
+                Shortcut {
+                    enabled: parent.enabled
+                    sequence: StandardKey.InsertParagraphSeparator
+                    onActivated: parent.activate()
                 }
             }
 

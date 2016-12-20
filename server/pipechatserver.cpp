@@ -48,7 +48,7 @@ void PipeChatServer::onDisconnected()
         return;
     }
 
-    broadcast(m_Clients[user] + " disconnected.");
+    broadcastMessage("System", m_Clients[user] + " disconnected.");
     qDebug() << m_Clients[user] << ":" << user->peerAddress().toString() << " disconnected.";
     m_Clients.remove(user);
     sendUserList();
@@ -66,7 +66,7 @@ void PipeChatServer::receiveData()
         if (data[0] == '/')
             parseSystemMessage(client, data);
         else
-            broadcast(data, client);
+            broadcastMessage(m_Clients[client], data);
     }
 }
 
@@ -75,6 +75,11 @@ void PipeChatServer::broadcast(const QString &msg, QTcpSocket *exception /* = nu
     for (auto client : m_Clients.keys())
         if (exception == nullptr || client != exception)
             sendMessage(client, msg);
+}
+
+void PipeChatServer::broadcastMessage(const QString &author, const QString &msg, QTcpSocket *exception /* = nullptr */)
+{
+    broadcast(author + ';' + QDateTime::currentDateTime().toString("hh:mm") + ';' + msg, exception);
 }
 
 void PipeChatServer::parseSystemMessage(QTcpSocket *sender, const QString &msg)
@@ -92,7 +97,7 @@ void PipeChatServer::parseSystemMessage(QTcpSocket *sender, const QString &msg)
     case smJOIN:
         m_Clients[sender] = parts[1];
         sendUserList();
-        broadcast("System " + QDateTime::currentDateTime().toString() + ' ' +  parts[1] + " joined.");
+        broadcastMessage("System", parts[1] + " joined.");
         break;
     case smUSERS:
         sendUserList();
