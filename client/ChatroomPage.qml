@@ -23,7 +23,8 @@ Page {
         chatModel.addMessage(parts[0], parts[1], parts.slice(2).join(";"))
     }
 
-    header: ToolBar {
+    header:
+        ToolBar {
             ToolButton {
                 text: qsTr("Disconnect")
                 anchors.left: parent.left
@@ -32,137 +33,130 @@ Page {
                 onClicked: {
                     client.disconnectFromHost()
                 }
-
-            /*Label {
-                id: pageTitle
-                text: "test"
-                font.pixelSize: 20
-                anchors.centerIn: parent
-            }*/
+            }
         }
-    }
 
-        GridLayout {
-            anchors.fill: parent
-            columns: 2
-            rows: 2
+    GridLayout {
+        anchors.fill: parent
+        columns: 2
+        rows: 2
 
-            ListView {
-                id: listView
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.margins: pane.leftPadding + messageField.leftPadding
-                displayMarginBeginning: 40
-                displayMarginEnd: 40
-                verticalLayoutDirection: ListView.BottomToTop
-                spacing: 12
-                model: PipeChatMessageModel {
-                    id: chatModel
-                }
-                delegate: Column {
-                    anchors.right: sentByMe ? parent.right : undefined
+        ListView {
+            id: listView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.margins: pane.leftPadding + messageField.leftPadding
+            displayMarginBeginning: 40
+            displayMarginEnd: 40
+            verticalLayoutDirection: ListView.BottomToTop
+            spacing: 12
+            model: PipeChatMessageModel {
+                id: chatModel
+            }
+            delegate: Column {
+                anchors.right: sentByMe ? parent.right : undefined
+                spacing: 6
+
+                readonly property bool sentByMe: author.text == client.username
+
+                Row {
+                    id: messageRow
                     spacing: 6
-
-                    readonly property bool sentByMe: author.text == client.username
-
-                    Row {
-                        id: messageRow
-                        spacing: 6
-                        anchors.right: sentByMe ? parent.right : undefined
-
-                        Label {
-                            id: author
-                            text: model.author
-                            font.bold: true
-                            color: "black"
-                            anchors.verticalCenter: parent.verticalCenter
-                            wrapMode: Label.Wrap
-                        }
-
-                        Rectangle {
-                            width: messageText.implicitWidth + 24
-                            height: messageText.implicitHeight + 24
-                            color: sentByMe ? "lightgrey" : "steelblue"
-
-                            Label {
-                                id: messageText
-                                text: model.text
-                                color: sentByMe ? "black" : "white"
-                                anchors.fill: parent
-                                anchors.margins: 12
-                                wrapMode: Label.Wrap
-                            }
-                        }
-                    }
+                    anchors.right: sentByMe ? parent.right : undefined
 
                     Label {
-                        id: timestampText
-                        text: {
-                            model.timestamp
-                        }
+                        id: author
+                        text: model.author
+                        font.bold: true
+                        color: "black"
+                        anchors.verticalCenter: parent.verticalCenter
+                        wrapMode: Label.Wrap
+                    }
 
-                        color: "lightgrey"
-                        anchors.right: sentByMe ? parent.right : undefined
+                    Rectangle {
+                        width: messageText.implicitWidth + 24
+                        height: messageText.implicitHeight + 24
+                        color: sentByMe ? "lightgrey" : "steelblue"
+
+                        Label {
+                            id: messageText
+                            text: model.text
+                            color: sentByMe ? "black" : "white"
+                            anchors.fill: parent
+                            anchors.margins: 12
+                            wrapMode: Label.Wrap
+                        }
                     }
                 }
 
-                ScrollBar.vertical: ScrollBar {}
-            }
-
-            ListView {
-                id: userList
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.margins: pane.leftPadding + messageField.leftPadding
-                displayMarginBeginning: 40
-                displayMarginEnd: 40
-                verticalLayoutDirection: ListView.TopToBottom
-                spacing: 12
-                model: client.userlist
-                delegate: ItemDelegate {
-                    text: modelData
-                    width: userList.width - userList.leftMargin - userList.rightMargin
-                    height: 32
-                    leftPadding: 32
-                }
-
-                ScrollBar.vertical: ScrollBar {}
-            }
-
-            Pane {
-                id: pane
-                Layout.fillWidth: true
-                Layout.columnSpan: 2
-
-                RowLayout {
-                    width: parent.width
-
-                    TextField {
-                        id: messageField
-                        Layout.fillWidth: true
-                        placeholderText: qsTr("Compose message")
+                Label {
+                    id: timestampText
+                    text: {
+                        model.timestamp
                     }
 
-                    Button {
-                        id: sendButton
-                        text: qsTr("Send")
-                        enabled: messageField.length > 0
-                        function activate() {
-                            if(!enabled)
-                                return
-                            client.sendMessage(messageField.text)
-                            messageField.text = "";
-                        }
-                        Shortcut {
-                            enabled: parent.enabled
-                            sequence: StandardKey.InsertParagraphSeparator
-                            onActivated: parent.activate()
-                        }
-                        onClicked: {
-                            activate()
-                        }
+                    color: "lightgrey"
+                    anchors.right: sentByMe ? parent.right : undefined
+                }
+            }
+
+            ScrollBar.vertical: ScrollBar {}
+        }
+
+        ListView {
+            id: userList
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.margins: pane.leftPadding + messageField.leftPadding
+            displayMarginBeginning: 40
+            displayMarginEnd: 40
+            verticalLayoutDirection: ListView.TopToBottom
+            spacing: 12
+            model: client.userlist
+            delegate: ItemDelegate {
+                text: modelData
+                width: userList.width - userList.leftMargin - userList.rightMargin
+                height: 32
+                leftPadding: 32
+            }
+
+            ScrollBar.vertical: ScrollBar {}
+        }
+
+        Pane {
+            id: pane
+            Layout.fillWidth: true
+            Layout.columnSpan: 2
+
+            RowLayout {
+                width: parent.width
+
+                TextField {
+                    id: messageField
+                    Layout.fillWidth: true
+                    placeholderText: qsTr("Compose message")
+                }
+
+                Button {
+                    id: sendButton
+                    text: qsTr("Send")
+                    enabled: messageField.length > 0
+                    function activate() {
+                        if(!enabled)
+                            return
+                        client.sendMessage(messageField.text)
+                        messageField.text = "";
+                    }
+                    Shortcut {
+                        enabled: parent.enabled
+                        sequence: StandardKey.InsertParagraphSeparator
+                        onActivated: parent.activate()
+                    }
+                    onClicked: {
+                        activate()
                     }
                 }
             }
         }
+    }
 }
