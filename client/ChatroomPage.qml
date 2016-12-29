@@ -1,6 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.0
+import Box2D 2.0
 
 import pipechat.messagemodel 1.0
 
@@ -20,12 +21,16 @@ Page {
 
     function onMessageArrived(msg) {
         var parts = msg.split(";")
-        chatModel.addMessage(parts[0], parts[1], parts.slice(2).join(";"))
+        //chatModel.addMessage(parts[0], parts[1], parts.slice(2).join(";"))
+        var messageBoxComponent = Qt.createComponent("MessageBox.qml")
+        var msgBox = messageBoxComponent.createObject(physicsScene, {"text": msg, "world": physicsWorld})
+        msgBox.self = msgBox
     }
 
     header:
         ToolBar {
             ToolButton {
+                id: disconnectButton
                 text: qsTr("Disconnect")
                 anchors.left: parent.left
                 anchors.leftMargin: 10
@@ -41,7 +46,105 @@ Page {
         columns: 2
         rows: 2
 
-        ListView {
+        Rectangle {
+            property var pressedBox: null
+            property Body pressedBody: null
+            property Box pressedBodyBox: null
+            property MessageBox pressedMessageBox: null
+
+            id: physicsScene
+            color: "green"
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.margins: pane.leftPadding + messageField.leftPadding
+
+            MouseJoint {
+                id: mouseJoint
+                bodyA: anchor
+                dampingRatio: 0.8
+                maxForce: 100
+            }
+
+            MouseArea {
+                property alias pressedBox: physicsScene.pressedBox
+                property alias pressedBody: physicsScene.pressedBody
+                property alias pressedBodyBox: physicsScene.pressedBodyBox
+                property alias pressedMessageBox: physicsScene.pressedMessageBox
+
+                id: mouseArea
+                anchors.fill: parent
+                propagateComposedEvents: true
+
+                onPressed: {
+                    if (pressedBody != null) {
+                        mouseJoint.maxForce = pressedBody.getMass() * 500
+                        mouseJoint.target = Qt.point(mouseX, mouseY)
+                        mouseJoint.bodyB = pressedBody
+
+                        //pressedBody.bodyType = Body.Kinematic
+                    }
+//                    if(pressedBodyBox != null) {
+//                        pressedBodyBox.density = 0
+//                        pressedBodyBox.rotation = 0
+//                    }
+//                    if(pressedMessageBox != null) {
+//                        pressedMessageBox.text = "Hello World"
+//                        pressedMessageBox.density = 0
+//                        pressedMessageBox.restitution = 0
+//                        pressedMessageBox.friction = 0
+//                        pressedMessageBox.bodyType = Body.Kinematic
+//                    }
+                }
+
+                onPositionChanged: {
+                    mouseJoint.target = Qt.point(mouseX, mouseY)
+                }
+
+                onReleased: {
+                    mouseJoint.bodyB = null
+                    //pressedBody = null
+                    //pressedBodyBox = null
+                }
+            }
+
+            World { id: physicsWorld }
+
+            Body {
+                id: anchor
+                world: physicsWorld
+            }
+
+            Wall {
+                id: bottomWall
+                height: 2
+                anchors {
+                    bottom: physicsScene.bottom
+                    left: physicsScene.left
+                    right: physicsScene.right
+                }
+            }
+            Wall {
+                id: leftWall
+                width: 2
+                anchors {
+                    left: physicsScene.left
+                    top: physicsScene.top
+                    bottom: physicsScene.bottom
+                }
+            }
+
+            Wall {
+                id: rightWall
+                width: 2
+                anchors {
+                    right: physicsScene.right
+                    top: physicsScene.top
+                    bottom: physicsScene.bottom
+                }
+            }
+        }
+
+       /* ListView {
             id: listView
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -101,7 +204,7 @@ Page {
             }
 
             ScrollBar.vertical: ScrollBar {}
-        }
+        }*/
 
         ListView {
             id: userList
@@ -145,7 +248,7 @@ Page {
                         if(!enabled)
                             return
                         client.sendMessage(messageField.text)
-                        messageField.text = "";
+                        messageField.text = ""
                     }
                     Shortcut {
                         enabled: parent.enabled

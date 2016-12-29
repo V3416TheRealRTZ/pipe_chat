@@ -3,5 +3,8 @@
         <file>main.qml</file>
         <file>ChatroomPage.qml</file>
         <file>ConnectionPage.qml</file>
+        <file>MessageBox.qml</file>
+        <file>BoxBody.qml</file>
+        <file>Wall.qml</file>
     </qresource>
 </RCC>
