@@ -32,7 +32,7 @@ void PipeChatClient::disconnectFromHost()
 qint64 PipeChatClient::write(const char *data)
 {
     qDebug() << "Socket writing: " << data;
-    quint64 ret = QTcpSocket::write(data);
+    qint64 ret = QTcpSocket::write(data);
     if(ret < 0)
         qDebug() << "Socket writing error!";
     return ret;
