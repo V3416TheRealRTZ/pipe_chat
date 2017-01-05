@@ -12,12 +12,14 @@ class PipeChatServer : public QTcpServer
     enum SystemMsg {
         smNONE,
         smJOIN,
-        smUSERS
+        smUSERS,
+        smFATAL
     };
 
     static const QStringList SYSTEM_MSGS; //!< Keywords indicating various system messages
 
     QMap<QTcpSocket *, QString> m_Clients;
+    QSet<QString> m_Usernames;
 
 protected:
     virtual void incomingConnection(int socketfd);

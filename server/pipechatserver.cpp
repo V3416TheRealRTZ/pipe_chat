@@ -4,16 +4,11 @@
 
 #include "pipechatserver.h"
 
-template <typename T, std::size_t N>
-constexpr std::size_t countof(T const (&)[N]) noexcept
-{
-    return N;
-}
-
 const QStringList PipeChatServer::SYSTEM_MSGS = {
     "",
     "/join",
-    "/users"
+    "/users",
+    "/fatal"
 };
 
 
@@ -24,7 +19,8 @@ PipeChatServer::PipeChatServer(QObject *parent) : QTcpServer(parent)
 
 PipeChatServer::~PipeChatServer()
 {
-
+    for (auto client : m_Clients.keys())
+        client->close();
 }
 
 void PipeChatServer::incomingConnection(int socketfd)
@@ -43,14 +39,20 @@ void PipeChatServer::incomingConnection(int socketfd)
 void PipeChatServer::onDisconnected()
 {
     QTcpSocket *user = static_cast<QTcpSocket *>(sender());
+    if (user == nullptr) {
+        qDebug() << "onDisconnected received signal from null socket.";
+        return;
+    }
     if (!m_Clients.contains(user)) {
         qDebug() << "Disconnected socket isn't in the client list.";
         return;
     }
-
-    broadcastMessage("System", m_Clients[user] + " disconnected.");
-    qDebug() << m_Clients[user] << ":" << user->peerAddress().toString() << " disconnected.";
+    QString username = m_Clients[user];
+    broadcastMessage("System", username + " disconnected.");
+    qDebug() << username << ":" << user->peerAddress().toString() << " disconnected.";
+    m_Usernames.remove(username);
     m_Clients.remove(user);
+    delete user;
     sendUserList();
 }
 
@@ -90,12 +92,15 @@ void PipeChatServer::parseSystemMessage(QTcpSocket *sender, const QString &msg)
     if((index = SYSTEM_MSGS.indexOf(parts[0])) != -1)
         sysMsg = static_cast<SystemMsg>(index);
 
+    QString name;
     switch(sysMsg) {
-    case smNONE:
-        sendMessage(sender, "Unknown command.");
-        break;
     case smJOIN:
-        m_Clients[sender] = parts[1];
+        name = parts[1];
+        for(size_t i = 0; m_Usernames.contains(name); ++i)
+            if(i > 0)
+                name = parts[1] + QString::number(i);
+        m_Clients[sender] = name;
+        m_Usernames.insert(name);
         sendUserList();
         broadcastMessage("System", parts[1] + " joined.");
         break;
@@ -103,7 +108,8 @@ void PipeChatServer::parseSystemMessage(QTcpSocket *sender, const QString &msg)
         sendUserList();
         break;
     default:
-        qWarning() << "Failed to parse system message " << msg;
+        sendMessage(sender, "Unknown command.");
+        break;
     }
 }
 
@@ -115,7 +121,7 @@ void PipeChatServer::sendMessage(QTcpSocket *socket, const QString &msg)
 void PipeChatServer::sendUserList()
 {
     QString msg(SYSTEM_MSGS[smUSERS]);
-    for (auto clientName : m_Clients)
+    for (auto clientName : m_Usernames)
         msg += " " + clientName;
     broadcast(msg);
 }
