@@ -5,7 +5,8 @@
 const QStringList PipeChatClient::SYSTEM_MSGS = {
     "",
     "/join",
-    "/users"
+    "/users",
+    "/fatal"
 };
 
 PipeChatClient::PipeChatClient()
@@ -92,6 +93,9 @@ void PipeChatClient::processSystemMessage(PipeChatClient::SystemMsg sysMsg, QStr
         setUserlist(parts);
         emit userlistChanged();
         break;
+    case smFATAL:
+        parts.removeFirst();
+        emit fatalError(parts.join(' '));
     default:
         break;
     }

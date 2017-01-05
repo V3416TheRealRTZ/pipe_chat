@@ -24,7 +24,6 @@ Page {
         //chatModel.addMessage(parts[0], parts[1], parts.slice(2).join(";"))
         var messageBoxComponent = Qt.createComponent("MessageBox.qml")
         var msgBox = messageBoxComponent.createObject(physicsScene, {"text": msg, "world": physicsWorld})
-        msgBox.self = msgBox
     }
 
     header:
@@ -47,9 +46,7 @@ Page {
         rows: 2
 
         Rectangle {
-            property var pressedBox: null
             property Body pressedBody: null
-            property Box pressedBodyBox: null
             property MessageBox pressedMessageBox: null
 
             id: physicsScene
@@ -66,9 +63,7 @@ Page {
             }
 
             MouseArea {
-                property alias pressedBox: physicsScene.pressedBox
                 property alias pressedBody: physicsScene.pressedBody
-                property alias pressedBodyBox: physicsScene.pressedBodyBox
                 property alias pressedMessageBox: physicsScene.pressedMessageBox
 
                 id: mouseArea
@@ -80,20 +75,7 @@ Page {
                         mouseJoint.maxForce = pressedBody.getMass() * 500
                         mouseJoint.target = Qt.point(mouseX, mouseY)
                         mouseJoint.bodyB = pressedBody
-
-                        //pressedBody.bodyType = Body.Kinematic
                     }
-//                    if(pressedBodyBox != null) {
-//                        pressedBodyBox.density = 0
-//                        pressedBodyBox.rotation = 0
-//                    }
-//                    if(pressedMessageBox != null) {
-//                        pressedMessageBox.text = "Hello World"
-//                        pressedMessageBox.density = 0
-//                        pressedMessageBox.restitution = 0
-//                        pressedMessageBox.friction = 0
-//                        pressedMessageBox.bodyType = Body.Kinematic
-//                    }
                 }
 
                 onPositionChanged: {
@@ -101,9 +83,11 @@ Page {
                 }
 
                 onReleased: {
+                    if(pressedMessageBox != null)
+                        pressedMessageBox.release()
                     mouseJoint.bodyB = null
-                    //pressedBody = null
-                    //pressedBodyBox = null
+                    pressedBody = null
+                    pressedMessageBox = null
                 }
             }
 
@@ -114,6 +98,16 @@ Page {
                 world: physicsWorld
             }
 
+            Wall {
+                id: topWall
+                height: 2
+                anchors {
+                    top: physicsScene.top
+                    left: physicsScene.left
+                    right: physicsScene.right
+                }
+                categories: Box.Category2
+            }
             Wall {
                 id: bottomWall
                 height: 2
@@ -141,6 +135,7 @@ Page {
                     top: physicsScene.top
                     bottom: physicsScene.bottom
                 }
+                collidesWith: Box.Category1 | Box.Category2
             }
         }
 

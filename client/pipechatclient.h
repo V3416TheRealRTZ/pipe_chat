@@ -14,7 +14,8 @@ class PipeChatClient : public QTcpSocket
     enum SystemMsg {
         smNONE,
         smJOIN,
-        smUSERS
+        smUSERS,
+        smFATAL
     };
 
     static const QStringList SYSTEM_MSGS; // Keywords indicating various system messages
@@ -67,6 +68,7 @@ signals:
     void usernameChanged();
     void userlistChanged();
     void messageArrived(const QString &msg);
+    void fatalError(const QString &err);
 };
 
 #endif // PIPECHATCLIENT_H

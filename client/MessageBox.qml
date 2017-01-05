@@ -1,19 +1,26 @@
 import QtQuick 2.7
 import Box2D 2.0
+import QtQuick.Controls 2.1
 
 Rectangle {
-    property var self: null
-    property alias text: textMetrics.text
-    property alias density: messageBodyBox.density
-    property alias restitution: messageBodyBox.restitution
-    property alias friction: messageBodyBox.friction
-    property alias bodyType: messageBody.bodyType
+    property alias text: textField.text
+    property alias body: messageBody
+
+    readonly property real maxHeight: 100
+    readonly property real maxWidth: 300
 
     id: messageBox
-    width: textMetrics.width
-    height: textMetrics.height
+    width: textField.contentWidth + textField.rightPadding + textField.leftPadding
+    height: textField.contentHeight + textField.topPadding + textField.bottomPadding
     color: "white"
     border.color: "black"
+
+    function release() {
+        messageBody.fixedRotation = false
+        messageBody.active = true
+        messageBodyBox.categories = Box.Category1
+        //tooltip.visible = false
+    }
 
     Body {
         id: messageBody
@@ -27,34 +34,48 @@ Rectangle {
                 density: 0.7
                 restitution: 0.3
                 friction: 0.7
+                categories: Box.Category1
+                collidesWith: Box.Category1 | Box.Category2 | Box.Category3
             }
         ]
     }
 
-    TextMetrics {
-        id: textMetrics
+    Text {
+        id: textField
         font.family: "Arial"
-        font.pointSize: 14
+        font.pointSize: 12
         elide: Text.ElideRight
-        elideWidth: physicsScene.width - leftWall.width - rightWall.width
+        width: implicitWidth > maxWidth ? maxWidth : undefined
+        height: implicitHeight > maxHeight ? maxHeight : undefined
+        wrapMode: Text.Wrap
         text: "Hello World"
     }
 
-    Text {
-        id: textField
-        text: parent.text
-        font: textMetrics.font
-    }
+//    ToolTip {
+//        id: tooltip
+//        visible: false
+//        text: "Hello World"
+//    }
 
     MouseArea {
         anchors.fill: parent
         propagateComposedEvents: true
+        hoverEnabled: true
+        onContainsMouseChanged: {
+            if(containsMouse && textField.truncated) {
+                ToolTip.visible = true
+                ToolTip.text = textField.text
+            }
+        }
+
         onPressed: {
             mouse.accepted = false
-            physicsScene.pressedBox = messageBox
+            physicsScene.pressedMessageBox = messageBox
             physicsScene.pressedBody = messageBody
-            physicsScene.pressedBodyBox = messageBodyBox
-            physicsScene.pressedMessageBox = self
+            messageBody.fixedRotation = true
+            messageBox.rotation = 0
+            messageBodyBox.categories = Box.Category3
+            //tooltip.visible = text.truncated
         }
     }
 }

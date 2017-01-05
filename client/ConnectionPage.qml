@@ -9,6 +9,7 @@ Page {
         client.connected.connect(setupConnected)
         client.error.connect(showError)
         client.stateChanged.connect(showSocketState)
+        client.fatalError.connect(setErrorText)
     }
 
     function setupConnected() {
@@ -17,8 +18,12 @@ Page {
         root.StackView.view.push("qrc:/ChatroomPage.qml")
     }
 
+    function setErrorText(text) {
+        errorLabel.text = text
+    }
+
     function showError(errorCode) {
-        errorLabel.text = qsTr(connectionErrorToStr(errorCode))
+        setErrorText(qsTr(connectionErrorToStr(errorCode)))
     }
 
     function showSocketState(socketState) {
