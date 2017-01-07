@@ -81,6 +81,7 @@ Page {
                 TextField {
                     id: ipField
                     placeholderText: qsTr("127.0.0.1")
+                    selectByMouse: true
                 }
 
                 Label {
@@ -91,6 +92,8 @@ Page {
                 TextField {
                     id: portField
                     width: ipField.width / 3
+                    validator: IntValidator{ bottom: 0 }
+                    selectByMouse: true
                 }
             }
 
@@ -107,6 +110,7 @@ Page {
                     placeholderText: qsTr("Username")
                     validator: RegExpValidator{ regExp: /\w+/g }
                     maximumLength: 24
+                    selectByMouse: true
                 }
             }
 
