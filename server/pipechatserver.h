@@ -19,7 +19,7 @@ class PipeChatServer : public QTcpServer
     static const QStringList SYSTEM_MSGS; //!< Keywords indicating various system messages
 
     QMap<QTcpSocket *, QString> m_Clients;
-    QSet<QString> m_Usernames;
+    QMap<QString, QTcpSocket *> m_Usernames;
 
 protected:
     virtual void incomingConnection(int socketfd);

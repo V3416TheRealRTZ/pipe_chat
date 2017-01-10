@@ -1,6 +1,5 @@
 #include <QRegExp>
 #include <QTcpSocket>
-#include <QDateTime>
 
 #include "pipechatserver.h"
 
@@ -19,8 +18,6 @@ PipeChatServer::PipeChatServer(QObject *parent) : QTcpServer(parent)
 
 PipeChatServer::~PipeChatServer()
 {
-    for (auto client : m_Clients.keys())
-        client->close();
 }
 
 void PipeChatServer::incomingConnection(int socketfd)
@@ -52,7 +49,6 @@ void PipeChatServer::onDisconnected()
     qDebug() << username << ":" << user->peerAddress().toString() << " disconnected.";
     m_Usernames.remove(username);
     m_Clients.remove(user);
-    delete user;
     sendUserList();
 }
 
@@ -67,8 +63,16 @@ void PipeChatServer::receiveData()
 
         if (data[0] == '/')
             parseSystemMessage(client, data);
-        else
-            broadcastMessage(m_Clients[client], data);
+        else {
+            QStringList parts = data.split(';', QString::KeepEmptyParts);
+            if(parts[1].count() > 0)
+                if(m_Usernames.contains(parts[1])) {
+                    sendMessage(m_Usernames[parts[1]], data);
+                    return;
+                }
+
+            broadcast(data, client);
+        }
     }
 }
 
@@ -81,7 +85,7 @@ void PipeChatServer::broadcast(const QString &msg, QTcpSocket *exception /* = nu
 
 void PipeChatServer::broadcastMessage(const QString &author, const QString &msg, QTcpSocket *exception /* = nullptr */)
 {
-    broadcast(author + ';' + QDateTime::currentDateTime().toString("hh:mm") + ';' + msg, exception);
+    broadcast(author + ";;" + msg, exception);
 }
 
 void PipeChatServer::parseSystemMessage(QTcpSocket *sender, const QString &msg)
@@ -100,9 +104,9 @@ void PipeChatServer::parseSystemMessage(QTcpSocket *sender, const QString &msg)
             if(i > 0)
                 name = parts[1] + QString::number(i);
         m_Clients[sender] = name;
-        m_Usernames.insert(name);
+        m_Usernames[name] = sender;
         sendUserList();
-        broadcastMessage("System", parts[1] + " joined.");
+        broadcastMessage("System", name + " joined.");
         break;
     case smUSERS:
         sendUserList();
@@ -121,7 +125,7 @@ void PipeChatServer::sendMessage(QTcpSocket *socket, const QString &msg)
 void PipeChatServer::sendUserList()
 {
     QString msg(SYSTEM_MSGS[smUSERS]);
-    for (auto clientName : m_Usernames)
+    for (auto clientName : m_Clients)
         msg += " " + clientName;
     broadcast(msg);
 }
