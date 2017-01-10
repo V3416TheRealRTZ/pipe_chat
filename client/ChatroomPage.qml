@@ -6,24 +6,26 @@ import Box2D 2.0
 import pipechat.messagemodel 1.0
 
 Page {
-    property date currentDate: new Date()
-
     id: root
+
+    property var messageBoxes: []
 
     Component.onCompleted: {
         client.disconnected.connect(onDisconnected)
-        client.messageArrived.connect(onMessageArrived)
+        client.messageArrived.connect(spawnMessage)
+    }
+
+    function spawnMessage(msg) {
+        var messageBoxComponent = Qt.createComponent("MessageBox.qml")
+        var msgBox = messageBoxComponent.createObject(physicsScene, {"text": msg, "world": physicsWorld, "x": spawnZone.anchors.leftMargin + 2})
+//        msgBox.destroy()
+        messageBoxes.push(msgBox)
     }
 
     function onDisconnected() {
-        root.StackView.view.pop()
-    }
-
-    function onMessageArrived(msg) {
-        var parts = msg.split(";")
-        //chatModel.addMessage(parts[0], parts[1], parts.slice(2).join(";"))
-        var messageBoxComponent = Qt.createComponent("MessageBox.qml")
-        var msgBox = messageBoxComponent.createObject(physicsScene, {"text": msg, "world": physicsWorld})
+        for (var i = 0; i < messageBoxes.length; i++)
+            messageBoxes[i].destroy()
+//        root.StackView.view.pop()
     }
 
     header:
@@ -40,191 +42,157 @@ Page {
             }
         }
 
-    GridLayout {
+    ColumnLayout {
         anchors.fill: parent
-        columns: 2
-        rows: 2
 
-        Rectangle {
-            property Body pressedBody: null
-            property MessageBox pressedMessageBox: null
-
-            id: physicsScene
-            color: "green"
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.margins: pane.leftPadding + messageField.leftPadding
+            Rectangle {
+                property Body pressedBody: null
+                property MessageBox pressedMessageBox: null
 
-            MouseJoint {
-                id: mouseJoint
-                bodyA: anchor
-                dampingRatio: 0.8
-                maxForce: 100
-            }
+                id: physicsScene
+                color: "green"
 
-            MouseArea {
-                property alias pressedBody: physicsScene.pressedBody
-                property alias pressedMessageBox: physicsScene.pressedMessageBox
-
-                id: mouseArea
                 anchors.fill: parent
-                propagateComposedEvents: true
 
-                onPressed: {
-                    if (pressedBody != null) {
-                        mouseJoint.maxForce = pressedBody.getMass() * 500
-                        mouseJoint.target = Qt.point(mouseX, mouseY)
-                        mouseJoint.bodyB = pressedBody
-                    }
+                Rectangle {
+                    id: spawnZone
+                    anchors.left: parent.left
+                    anchors.leftMargin: 305
+                    anchors.top: parent.top
+                    anchors.topMargin: 3
+                    anchors.bottom: parent.bottom
+                    color: "red"
                 }
 
-                onPositionChanged: {
-                    mouseJoint.target = Qt.point(mouseX, mouseY)
-                }
+                MouseArea {
+                    property alias pressedBody: physicsScene.pressedBody
+                    property alias pressedMessageBox: physicsScene.pressedMessageBox
 
-                onReleased: {
-                    if(pressedMessageBox != null)
-                        pressedMessageBox.release()
-                    mouseJoint.bodyB = null
-                    pressedBody = null
-                    pressedMessageBox = null
-                }
-            }
+                    id: mouseArea
+                    anchors.fill: parent
+                    propagateComposedEvents: true
 
-            World { id: physicsWorld }
-
-            Body {
-                id: anchor
-                world: physicsWorld
-            }
-
-            Wall {
-                id: topWall
-                height: 2
-                anchors {
-                    top: physicsScene.top
-                    left: physicsScene.left
-                    right: physicsScene.right
-                }
-                categories: Box.Category2
-            }
-            Wall {
-                id: bottomWall
-                height: 2
-                anchors {
-                    bottom: physicsScene.bottom
-                    left: physicsScene.left
-                    right: physicsScene.right
-                }
-            }
-            Wall {
-                id: leftWall
-                width: 2
-                anchors {
-                    left: physicsScene.left
-                    top: physicsScene.top
-                    bottom: physicsScene.bottom
-                }
-            }
-
-            Wall {
-                id: rightWall
-                width: 2
-                anchors {
-                    right: physicsScene.right
-                    top: physicsScene.top
-                    bottom: physicsScene.bottom
-                }
-                collidesWith: Box.Category1 | Box.Category2
-            }
-        }
-
-       /* ListView {
-            id: listView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.margins: pane.leftPadding + messageField.leftPadding
-            displayMarginBeginning: 40
-            displayMarginEnd: 40
-            verticalLayoutDirection: ListView.BottomToTop
-            spacing: 12
-            model: PipeChatMessageModel {
-                id: chatModel
-            }
-            delegate: Column {
-                anchors.right: sentByMe ? parent.right : undefined
-                spacing: 6
-
-                readonly property bool sentByMe: author.text == client.username
-
-                Row {
-                    id: messageRow
-                    spacing: 6
-                    anchors.right: sentByMe ? parent.right : undefined
-
-                    Label {
-                        id: author
-                        text: model.author
-                        font.bold: true
-                        color: "black"
-                        anchors.verticalCenter: parent.verticalCenter
-                        wrapMode: Label.Wrap
-                    }
-
-                    Rectangle {
-                        width: messageText.implicitWidth + 24
-                        height: messageText.implicitHeight + 24
-                        color: sentByMe ? "lightgrey" : "steelblue"
-
-                        Label {
-                            id: messageText
-                            text: model.text
-                            color: sentByMe ? "black" : "white"
-                            anchors.fill: parent
-                            anchors.margins: 12
-                            wrapMode: Label.Wrap
+                    onPressed: {
+                        if (pressedBody != null) {
+                            mouseJoint.maxForce = pressedBody.getMass() * 500
+                            mouseJoint.target = Qt.point(mouseX, mouseY)
+                            mouseJoint.bodyB = pressedBody
                         }
                     }
-                }
 
-                Label {
-                    id: timestampText
-                    text: {
-                        model.timestamp
+                    onPositionChanged: {
+                        mouseJoint.target = Qt.point(mouseX, mouseY)
                     }
 
-                    color: "lightgrey"
-                    anchors.right: sentByMe ? parent.right : undefined
+                    function release() {
+                        if(pressedMessageBox != null)
+                            pressedMessageBox.release()
+                        mouseJoint.bodyB = null
+                        pressedBody = null
+                        pressedMessageBox = null
+                    }
+
+                    onReleased: {
+                        release()
+                    }
+                }
+
+                MouseJoint {
+                    id: mouseJoint
+                    bodyA: anchor
+                    dampingRatio: 0.8
+                    maxForce: 100
+                }
+
+                World { id: physicsWorld }
+
+                Body {
+                    id: anchor
+                    world: physicsWorld
+                }
+
+                Wall {
+                    id: topWall
+                    height: 2
+                    anchors {
+                        top: physicsScene.top
+                        left: physicsScene.left
+                        right: physicsScene.right
+                    }
+                }
+
+                Wall {
+                    id: bottomWall
+                    height: 2
+                    anchors {
+                        bottom: physicsScene.bottom
+                        left: physicsScene.left
+                        right: physicsScene.right
+                    }
+                }
+
+//                Wall {
+//                    id: midWall
+//                    width: 2
+//                    anchors {
+//                        left: spawnZone.left
+//                        top: physicsScene.top
+//                        bottom: physicsScene.bottom
+//                    }
+//                    collidesWith: Box.Category1 | Box.Category2
+//                }
+
+                Wall {
+                    id: leftWall
+                    width: 2
+                    anchors {
+                        left: physicsScene.left
+                        top: physicsScene.top
+                        bottom: physicsScene.bottom
+                    }
+                }
+
+                Wall {
+                    id: rightWall
+                    width: 2
+                    anchors {
+                        top: physicsScene.top
+                        bottom: physicsScene.bottom
+                        right: physicsScene.right
+                    }
+                }
+
+                Pipe {
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                }
+
+                ListView {
+                    id: userList
+                    anchors {
+                        top: parent.top
+                        bottom: parent.bottom
+                    }
+                    verticalLayoutDirection: ListView.TopToBottom
+                    spacing: 2
+                    model: client.userlist
+                    delegate:
+                        Pipe {
+                            text: modelData
+                        }
+
+                    ScrollBar.vertical: ScrollBar {}
                 }
             }
-
-            ScrollBar.vertical: ScrollBar {}
-        }*/
-
-        ListView {
-            id: userList
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.margins: pane.leftPadding + messageField.leftPadding
-            displayMarginBeginning: 40
-            displayMarginEnd: 40
-            verticalLayoutDirection: ListView.TopToBottom
-            spacing: 12
-            model: client.userlist
-            delegate: ItemDelegate {
-                text: modelData
-                width: userList.width - userList.leftMargin - userList.rightMargin
-                height: 32
-                leftPadding: 32
-            }
-
-            ScrollBar.vertical: ScrollBar {}
         }
 
         Pane {
             id: pane
             Layout.fillWidth: true
-            Layout.columnSpan: 2
 
             RowLayout {
                 width: parent.width
@@ -233,6 +201,7 @@ Page {
                     id: messageField
                     Layout.fillWidth: true
                     placeholderText: qsTr("Compose message")
+                    maximumLength: 300
                 }
 
                 Button {
@@ -242,11 +211,11 @@ Page {
                     function activate() {
                         if(!enabled)
                             return
-                        client.sendMessage(messageField.text)
+                        spawnMessage(client.username + ";;" + messageField.text)
                         messageField.text = ""
                     }
                     Shortcut {
-                        enabled: parent.enabled
+                        enabled: sendButton.enabled
                         sequence: StandardKey.InsertParagraphSeparator
                         onActivated: parent.activate()
                     }

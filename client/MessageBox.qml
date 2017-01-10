@@ -3,14 +3,22 @@ import Box2D 2.0
 import QtQuick.Controls 2.1
 
 Rectangle {
-    property alias text: textField.text
+    property alias text: textField.encodedText
+    property alias author: textField.author
+    property alias message: textField.message
     property alias body: messageBody
 
     readonly property real maxHeight: 100
     readonly property real maxWidth: 300
 
     id: messageBox
-    width: textField.contentWidth + textField.rightPadding + textField.leftPadding
+    width: {
+        var x = textField.contentWidth + textField.rightPadding + textField.leftPadding
+        if (x < 300)
+            return 300
+        return x
+    }
+
     height: textField.contentHeight + textField.topPadding + textField.bottomPadding
     color: "white"
     border.color: "black"
@@ -23,11 +31,17 @@ Rectangle {
     }
 
     Body {
+
         id: messageBody
         target: messageBox
         bodyType: Body.Dynamic
+        function destroy() {
+            parent.destroy()
+        }
+
         fixtures: [
             Box {
+                property alias rectangle: messageBox
                 id: messageBodyBox
                 width: messageBox.width
                 height: messageBox.height
@@ -41,6 +55,16 @@ Rectangle {
     }
 
     Text {
+        property string encodedText: ""
+        property var author: {
+            var parts = encodedText.split(";")
+            return parts[0]
+        }
+        property string message: {
+            var parts = encodedText.split(";")
+            return parts[2]
+        }
+
         id: textField
         font.family: "Arial"
         font.pointSize: 12
@@ -48,7 +72,32 @@ Rectangle {
         width: implicitWidth > maxWidth ? maxWidth : undefined
         height: implicitHeight > maxHeight ? maxHeight : undefined
         wrapMode: Text.Wrap
-        text: "Hello World"
+        text: {
+            return "<b>" + author + ":</b> " + message
+        }
+    }
+
+    Dialog {
+        id: fullMessage
+        modal: true
+        standardButtons: Dialog.Ok
+
+
+        bottomMargin: 500
+        topMargin: 500
+        rightMargin: 500
+        leftMargin: 500
+//        topMargin: root.height / 2 - implicitHeight / 2
+//        leftMargin: root.width / 2 - implicitWidth / 2
+//        bottomMargin: root.height / 2 - implicitHeight / 2
+//        rightMargin: root.width / 2 - implicitWidth / 2
+
+        title: textField.author
+
+        contentItem: Text {
+            text: textField.message
+            wrapMode: Text.Wrap
+        }
     }
 
 //    ToolTip {
@@ -61,14 +110,28 @@ Rectangle {
         anchors.fill: parent
         propagateComposedEvents: true
         hoverEnabled: true
-        onContainsMouseChanged: {
-            if(containsMouse && textField.truncated) {
-                ToolTip.visible = true
-                ToolTip.text = textField.text
-            }
+//        onContainsMouseChanged: {
+//            if(containsMouse && textField.truncated) {
+//                ToolTip.visible = true
+//                ToolTip.text = textField.text
+//                ToolTip.contentItem.wrapMode = Text.WrapAnywhere
+//                //ToolTip.contentWidth = 300
+//                //ToolTip.width = 300
+//            }
+//        }
+
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+        onDoubleClicked: {
+            fullMessage.open()
         }
 
         onPressed: {
+            if(mouse.button === Qt.RightButton) {
+                mouseArea.release()
+                messageBox.destroy()
+                return
+            }
             mouse.accepted = false
             physicsScene.pressedMessageBox = messageBox
             physicsScene.pressedBody = messageBody

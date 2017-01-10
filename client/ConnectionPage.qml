@@ -1,5 +1,5 @@
 import QtQuick 2.7
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
 
 Page {
@@ -66,6 +66,8 @@ Page {
     Pane {
         id: pane
         Layout.fillWidth: true
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
 
         ColumnLayout {
             id: grid
@@ -145,6 +147,27 @@ Page {
                 font.bold: true
                 id: errorLabel
             }
+
+            Button {
+                text: qsTr("About")
+                onClicked: dialog.open()
+            }
+        }
+    }
+
+    Dialog {
+        id: dialog
+        modal: true
+        standardButtons: Dialog.Ok
+
+        topMargin: parent.height / 2 - implicitHeight / 2
+        leftMargin: parent.width / 2 - implicitWidth / 2
+        bottomMargin: parent.height / 2 - implicitHeight / 2
+        rightMargin: parent.width / 2 - implicitWidth / 2
+
+        title: qsTr("About PipeChat")
+        contentItem: Text {
+            text: "Hi"
         }
     }
 }
