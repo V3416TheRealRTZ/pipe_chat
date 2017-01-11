@@ -167,7 +167,7 @@ Page {
 
         title: qsTr("About PipeChat")
         contentItem: Text {
-            text: "PipeChat version 7_10.01.2017_2338_115d192"
+            text: "PipeChat version " + BUILD
         }
     }
 }

@@ -1,12 +1,13 @@
 @echo off
-type version
 set /p Build=<version
 set /a Build+=1
->version echo %Build%
 For /f "tokens=1-3 delims=/ " %%a in ('date /t') do (set mydate=%%a)
 For /f "tokens=1-2 delims=/:" %%a in ("%TIME%") do (set mytime=%%a%%b)
->>version echo %mydate%_%mytime%
 for /f %%v in ('git rev-parse --short HEAD') do set hash=%%v
->>version echo %hash%
-COPY %~dp0\client\release\PipeChatClient.exe "%~dp0\%Build%_%mydate%_%mytime%_%hash%_client.exe"
-COPY %~dp0\server\release\PipeChatServer.exe "%~dp0\%Build%_%mydate%_%mytime%_%hash%_server.exe"
+>version echo %Build%_%mydate%_%mytime%_%hash%
+
+echo %Build%_%mydate%_%mytime%_%hash% >version
+break >version.h
+echo #define VERSION_BUILD "%Build%_%mydate%_%mytime%_%hash%" >version.h
+COPY %~dp0\version.h "%~dp0\client
+echo %Build%_%mydate%_%mytime%_%hash%

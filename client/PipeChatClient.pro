@@ -19,6 +19,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     pipechatclient.h \
-    pipechatmessagemodel.h
+    pipechatmessagemodel.h \
+    version.h
 
 include(qml-box2d/box2d-static.pri)
