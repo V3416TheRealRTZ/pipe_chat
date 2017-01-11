@@ -9,7 +9,7 @@ Image {
 
     width: 300
     height: 100
-    z: 100
+    z: 1000
 
     source: "images/pipe.png"
 

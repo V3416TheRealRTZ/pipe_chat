@@ -8,7 +8,7 @@ Rectangle {
     property alias message: textField.message
     property alias body: messageBody
 
-    readonly property real maxHeight: 100
+    readonly property real maxHeight: 75
     readonly property real maxWidth: 300
 
     id: messageBox
@@ -67,13 +67,21 @@ Rectangle {
 
         id: textField
         font.family: "Arial"
-        font.pointSize: 12
+        font.pointSize: 14
         elide: Text.ElideRight
         width: implicitWidth > maxWidth ? maxWidth : undefined
         height: implicitHeight > maxHeight ? maxHeight : undefined
         wrapMode: Text.Wrap
         text: {
-            return "<b>" + author + ":</b> " + message
+            var words = message.split(" ")
+            for(var i = 0; i < words.length; ++i)
+                for(var j = 0; j < emotesModel.length; ++j)
+                    if(emotesModel[j] === (words[i] + ".png")) {
+                        words[i] = "<img src=\"emotes/" + words[i] + ".png\">"
+                        break;
+                    }
+
+            return "<b>" + author + ":</b> " + words.join(" ")
         }
     }
 

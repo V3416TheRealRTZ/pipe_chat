@@ -173,6 +173,7 @@ Page {
 
                 ListView {
                     id: userList
+                    z: 1000
                     anchors {
                         top: parent.top
                         bottom: parent.bottom
@@ -203,6 +204,52 @@ Page {
                     placeholderText: qsTr("Compose message")
                     maximumLength: 300
                 }
+
+                Button {
+                    id: emotesButton
+                    text: qsTr("Emotes")
+                    enabled: messageField.length < messageField.maximumLength
+                    onClicked: emotesPopup.open()
+                }
+
+                Popup {
+                        id: emotesPopup
+                        x: emotesButton.x - width
+                        y: emotesButton.y - height
+                        height: 210
+                        width: 180
+                        modal: false
+                        focus: true
+                        closePolicy: Popup.CloseOnPressOutsideParent
+                        contentItem:
+                            GridView {
+                                cellHeight: 50
+                                cellWidth: 50
+                                width: parent.width
+                                height: parent.height
+                                model: emotesModel
+                                delegate: Button {
+                                    id: emoteButton
+                                    width: emoteImage.implicitWidth
+                                    height: emoteImage.implicitHeight
+                                    onClicked: {
+                                        messageField.text += (' ' + emoteImage.emoteText + ' ')
+                                    }
+                                    highlighted: true
+                                    background: Rectangle {
+                                        width: emoteImage.implicitWidth
+                                        height: emoteImage.implicitHeight
+                                        color: "transparent"
+                                    }
+
+                                    Image {
+                                        property string emoteText: modelData.slice(0, -4);
+                                        id: emoteImage
+                                        source: "emotes/" + modelData
+                                    }
+                                }
+                            }
+                    }
 
                 Button {
                     id: sendButton

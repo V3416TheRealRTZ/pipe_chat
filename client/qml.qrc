@@ -6,5 +6,6 @@
         <file>MessageBox.qml</file>
         <file>BoxBody.qml</file>
         <file>Wall.qml</file>
+        <file>Pipe.qml</file>
     </qresource>
 </RCC>

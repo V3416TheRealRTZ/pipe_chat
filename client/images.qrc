@@ -2,4 +2,16 @@
     <qresource prefix="/images">
         <file>pipe.png</file>
     </qresource>
+    <qresource prefix="/emotes">
+        <file>4Head.png</file>
+        <file>BabyRage.png</file>
+        <file>BibleThump.png</file>
+        <file>DendiFace.png</file>
+        <file>Kappa.png</file>
+        <file>NotLikeThis.png</file>
+        <file>OSfrog.png</file>
+        <file>PogChamp.png</file>
+        <file>TriHard.png</file>
+        <file>VoHiYo.png</file>
+    </qresource>
 </RCC>
