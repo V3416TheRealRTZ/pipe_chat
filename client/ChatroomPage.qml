@@ -167,6 +167,7 @@ Page {
                 }
 
                 Pipe {
+                    id: allPipe
                     anchors.left: parent.left
                     anchors.bottom: parent.bottom
                     overlayColor: "transparent"
@@ -177,7 +178,8 @@ Page {
                     z: 1000
                     anchors {
                         top: parent.top
-                        bottom: parent.bottom
+                        bottom: allPipe.top
+                        bottomMargin: 2
                     }
                     verticalLayoutDirection: ListView.TopToBottom
                     spacing: 2
@@ -205,6 +207,7 @@ Page {
                     Layout.fillWidth: true
                     placeholderText: qsTr("Compose message")
                     maximumLength: 300
+                    selectByMouse: true
                 }
 
                 Button {
@@ -235,7 +238,9 @@ Page {
                                     width: emoteImage.implicitWidth
                                     height: emoteImage.implicitHeight
                                     onClicked: {
-                                        messageField.text += (' ' + emoteImage.emoteText + ' ')
+                                        if(messageField.text.charAt(messageField.text.length - 1) != ' ')
+                                            messageField.text += ' '
+                                        messageField.text += (emoteImage.emoteText + ' ')
                                     }
                                     highlighted: true
                                     background: Rectangle {
