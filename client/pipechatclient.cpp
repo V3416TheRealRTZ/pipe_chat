@@ -88,10 +88,15 @@ void PipeChatClient::processSystemMessage(PipeChatClient::SystemMsg sysMsg, QStr
 {
     QStringList parts = msg.split(' ', QString::SkipEmptyParts);
     parts.removeFirst();
+    QList<QObject *> list;
     switch(sysMsg) {
     case smUSERS:
-        setUserlist(parts);
-        emit userlistChanged();
+        for(auto i : parts) {
+            qsrand(qHash(i));
+            QColor color(qrand() % 256, qrand() % 256, qrand() % 256, 130);
+            list.push_back(new User(i, color));
+        }
+        setUserlist(list);
         break;
     case smFATAL:
         parts.removeFirst();

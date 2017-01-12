@@ -25,7 +25,7 @@ Page {
     function onDisconnected() {
         for (var i = 0; i < messageBoxes.length; i++)
             messageBoxes[i].destroy()
-//        root.StackView.view.pop()
+        root.StackView.view.pop()
     }
 
     header:
@@ -54,7 +54,7 @@ Page {
                 property MessageBox pressedMessageBox: null
 
                 id: physicsScene
-                color: "green"
+                color: "lightgrey"
 
                 anchors.fill: parent
 
@@ -65,7 +65,7 @@ Page {
                     anchors.top: parent.top
                     anchors.topMargin: 3
                     anchors.bottom: parent.bottom
-                    color: "red"
+                    color: "transparent"
                 }
 
                 MouseArea {
@@ -169,6 +169,7 @@ Page {
                 Pipe {
                     anchors.left: parent.left
                     anchors.bottom: parent.bottom
+                    overlayColor: "transparent"
                 }
 
                 ListView {
@@ -183,7 +184,8 @@ Page {
                     model: client.userlist
                     delegate:
                         Pipe {
-                            text: modelData
+                            text: modelData.username
+                            overlayColor: modelData.usercolor
                         }
 
                     ScrollBar.vertical: ScrollBar {}

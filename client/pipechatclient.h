@@ -2,14 +2,51 @@
 #define PIPECHATCLIENT_H
 
 #include <QTcpSocket>
+#include <QColor>
 
 #include "pipechatmessagemodel.h"
+
+class User : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
+    Q_PROPERTY(QColor usercolor READ usercolor WRITE setUsercolor NOTIFY usercolorChanged)
+
+    QString m_Username;
+    QColor m_Usercolor;
+
+public:
+    User(const QString &name, const QColor &color) : m_Username(name), m_Usercolor(color) {}
+    void setUsername(const QString &username) {
+        if (username != m_Username) {
+            m_Username = username;
+            emit usernameChanged();
+        }
+    }
+    QString username() const {
+        return m_Username;
+    }
+    QColor usercolor() const {
+        return m_Usercolor;
+    }
+
+    void setUsercolor(const QColor &usercolor) {
+        if (usercolor != m_Usercolor) {
+            m_Usercolor = usercolor;
+            emit usercolorChanged();
+        }
+    }
+signals:
+    void usernameChanged();
+    void usercolorChanged();
+};
 
 class PipeChatClient : public QTcpSocket
 {
     Q_OBJECT
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
-    Q_PROPERTY(QStringList userlist READ userlist WRITE setUserlist NOTIFY userlistChanged)
+    Q_PROPERTY(QList<QObject *> userlist READ userlist WRITE setUserlist NOTIFY userlistChanged)
 
     enum SystemMsg {
         smNONE,
@@ -21,7 +58,7 @@ class PipeChatClient : public QTcpSocket
     static const QStringList SYSTEM_MSGS; // Keywords indicating various system messages
 
     QString m_Username;
-    QStringList m_Userlist;
+    QList<QObject *> m_Userlist;
 
 public:
     PipeChatClient();
@@ -43,13 +80,15 @@ public:
         return m_Username;
     }
 
-    void setUserlist(const QStringList &userlist) {
+    void setUserlist(const QList<QObject *> &userlist) {
         if (userlist != m_Userlist) {
+            for(auto i : m_Userlist)
+                delete i;
             m_Userlist = userlist;
             emit userlistChanged();
         }
     }
-    QStringList userlist() const {
+    QList<QObject *> userlist() const {
         return m_Userlist;
     }
 

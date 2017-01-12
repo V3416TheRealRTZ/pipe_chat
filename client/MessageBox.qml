@@ -20,11 +20,18 @@ Rectangle {
     }
 
     height: textField.contentHeight + textField.topPadding + textField.bottomPadding
-    color: "white"
+    color: {
+        for(var i = 0; i < client.userlist.length; ++i)
+            if(client.userlist[i].username === textField.author)
+                return client.userlist[i].usercolor
+        return "white"
+
+    }
+
     border.color: "black"
 
     function release() {
-        messageBody.fixedRotation = false
+//        messageBody.fixedRotation = false
         messageBody.active = true
         messageBodyBox.categories = Box.Category1
         //tooltip.visible = false
@@ -143,8 +150,8 @@ Rectangle {
             mouse.accepted = false
             physicsScene.pressedMessageBox = messageBox
             physicsScene.pressedBody = messageBody
-            messageBody.fixedRotation = true
-            messageBox.rotation = 0
+//            messageBody.fixedRotation = true
+//            messageBox.rotation = 0
             messageBodyBox.categories = Box.Category3
             //tooltip.visible = text.truncated
         }
